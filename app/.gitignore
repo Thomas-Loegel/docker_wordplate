@@ -1,0 +1,6 @@
+node_modules
+vendor
+.env
+
+# public/.htaccess ?
+# app/public/themes/wordplate/assets/scripts/app.js ?

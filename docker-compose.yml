@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  web:
+    image: php:7.4-apache
+    # Nom custom
+    container_name: php-apache
+    # port local:container
+    ports:
+      - 1337:80
+    environment: 
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+      - DB_HOST=db
+    # networks:
+    volumes:
+      - ./app:/var/www/html
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    # Lien vers le service "db" (déclaré ci-après) pour se connecter à la base de données
+    links:
+      - db
+    # Composer
+    # command: composer create-project --prefer-dist wordplate/wordplate /var/www/html && sed -i 's/DB_HOST.*/DB_HOST=db/' /var/www/html/.env
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    # Nom custom
+    container_name: phpmyadmin
+    environment:
+      # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - 8080:80
+    links:
+      - db:db
+
+  db:
+    image: mysql:latest
+    # Nom custom
+    container_name: mysql
+    ports:
+      - 3306:3306
+    command: [
+      '--default_authentication_plugin=mysql_native_password',
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci'
+    ]
+    volumes:
+      - ./wp-data:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: wordplate_demo
+      MYSQL_ROOT_PASSWORD: password
+
+# Volumes (à conserver)
+volumes:
+  db_data:
